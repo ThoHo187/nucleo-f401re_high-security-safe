@@ -13,6 +13,6 @@ This repo contains the all files for the high security safe project in my school
 
 
 ## State machine
-
+![Loading State-Diagram](./assets/state_diagram.png)
 
 ## Resources
