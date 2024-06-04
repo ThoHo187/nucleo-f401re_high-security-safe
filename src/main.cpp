@@ -17,7 +17,7 @@ typedef enum
     INPUT1_ACCEPTED,
     INPUT2_ACCEPTED,
     INPUT3_ACCEPTED,
-    INPUT_Refused,
+    INPUT_REFSUED,
     OPED_DOOR,
     CLOSE_DOOR,
 }Event_t;
@@ -29,6 +29,7 @@ State_t state = SAFE_LOCKED;
 // Declare prototypes
 void state_machine(Event_t event);
 
+
 void setup() 
 {
 
@@ -38,6 +39,7 @@ void loop()
 {
 
 }
+
 
 /*
 void state_machine(Event_t event)
