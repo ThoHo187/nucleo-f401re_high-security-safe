@@ -50,6 +50,9 @@ char read_keys();
 
 void setup()
 {
+    // Initialize serial communication
+    Serial.begin(9600); 
+    
     // Initialize PIN setup
     pinSetup();
     pinKeypad();
