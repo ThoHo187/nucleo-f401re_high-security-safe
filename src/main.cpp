@@ -267,4 +267,3 @@ char read_keys()
     // Wenn keine Taste gedrückt ist, gib einen speziellen Wert zurück, z.B. 0
     return 0;
 }
-
