@@ -14,11 +14,22 @@
 #define BTN_3_PIN PB0
 #define BTN_4_PIN PA4
 
+// Define external interrupt PIN´s
+#define RE_PIN_A PC10
+#define RE_PIN_B PC12
+
 // Declare prototypes
 void led_setup();
 void button_setup();
+void interrupt_setup();
+void isr_re();
 void check_buttons();
 void check_states();
+
+
+// Variablenübergabe an globale Variable
+volatile int32_t counter = 0;
+
 
 void setup()
 {
@@ -28,6 +39,7 @@ void setup()
   // Initialize PIN setup
   led_setup();
   button_setup();
+  interrupt_setup();
   keypad_setup_pins();
 }
 
@@ -35,6 +47,8 @@ void loop()
 {
   check_buttons();
   check_states();
+  
+  Serial.printf("Counter: %dc\n", counter);
 }
 
 // Function for LED - PIN setup
@@ -50,11 +64,37 @@ void led_setup()
 // Function for BTN - PIN setup
 void button_setup()
 {
-  // Define all buttons as input. PULLUPs are used external
-  pinMode(BTN_1_PIN, INPUT);
-  pinMode(BTN_2_PIN, INPUT);
-  pinMode(BTN_3_PIN, INPUT);
-  pinMode(BTN_4_PIN, INPUT);
+  // Define all buttons as input
+  pinMode(BTN_1_PIN, INPUT_PULLUP);
+  pinMode(BTN_2_PIN, INPUT_PULLUP);
+  pinMode(BTN_3_PIN, INPUT_PULLUP);
+  pinMode(BTN_4_PIN, INPUT_PULLUP);
+}
+
+// Function for interrupt setup
+void interrupt_setup()
+{
+    pinMode(RE_PIN_A, INPUT_PULLUP);
+    pinMode(RE_PIN_B, INPUT_PULLUP);
+
+    // Attach interrupt to PIN_A, triggering on RISING edge
+    attachInterrupt(RE_PIN_A, isr_re, RISING);
+}
+
+// Function for interrupt service routine (ISR) for PIN_A
+void isr_re()
+{
+    // Determine the direction based on the state of PIN_B
+    if (digitalRead(RE_PIN_B) == HIGH)
+    {
+        // counter clockwise (Gegen Uhrzeigersinn)
+        counter--;
+    }
+    else
+    {
+        // clockwise (Im Uhrzeigersinn)
+        counter++;
+    }
 }
 
 // Function for the test program with LED´s and BTN´s
