@@ -1,272 +1,123 @@
 #include <Arduino.h>
 #include "state_machine.h"
-
-
-// Define BTN -  PIN´s on Nucleo F401RE
-#define btn1Pin PA5
-#define btn2Pin PA6
-#define btn3Pin PA7
-#define btn4Pin PA8
-
+#include "keypad.h"
 
 // Define LED - PIN´s on Nucleo F401RE
-#define ledRedPin PB12   // LED indicating SAFE_LOCKED
-#define led1Pin PB13     // LED indicating LEVEL_1_UNLOCKED
-#define led2Pin PB14     // LED indicating LEVEL_2_UNLOCKED
-#define led3Pin PB15     // LED indicating LEVEL_3_UNLOCKED
+#define LED_RED_LOCKED_PIN PC9
+#define LED_GREEN_LOCK_1_PIN PC8
+#define LED_GREEN_LOCK_2_PIN PC6
+#define LED_GREEN_LOCK_3_PIN PC5
 
-
-// Define PIN´s for the rows on Nucleo F401RE
-#define ROW1 PA12
-#define ROW2 PC5
-#define ROW3 PC6
-#define ROW4 PC8
-
-
-// Define PIN´s for the cols on Nucleo F401RE
-#define COL1 PC0
-#define COL2 PC1
-#define COL3 PC2
-#define COL4 PC3
-
-
-// Define the key values in a two-dimensional array
-char keys[4][4] = 
-{
-  {'1', '2', '3', 'A'},
-  {'4', '5', '6', 'B'},
-  {'7', '8', '9', 'C'},
-  {'*', '0', '#', 'D'}
-};
-
+// Define BTN - PIN´s on Nucleo F401RE
+#define BTN_1_PIN PC0
+#define BTN_2_PIN PC1
+#define BTN_3_PIN PB0
+#define BTN_4_PIN PA4
 
 // Declare prototypes
-void pinSetup();
-void pinKeypad();
-void checkBTNs();
-void checkStates();
-char read_keys();
-
+void led_setup();
+void button_setup();
+void check_buttons();
+void check_states();
 
 void setup()
 {
-    // Initialize serial communication
-    Serial.begin(9600); 
-    
-    // Initialize PIN setup
-    pinSetup();
-    pinKeypad();
-}
+  // Initialize serial communication
+  Serial.begin(115200);
 
+  // Initialize PIN setup
+  led_setup();
+  button_setup();
+  keypad_setup_pins();
+}
 
 void loop()
 {
-    checkBTNs();
-    checkStates();
-
-    char key = read_keys(); // Lese die gedrückte Taste
-    if (key != 0) {
-        // Hier kannst du die erkannte Taste verarbeiten
-        Serial.print("Taste gedrückt: ");
-        Serial.println(key);
-    }
+  check_buttons();
+  check_states();
 }
 
-
-// Function for PIN Setup
-void pinSetup()
+// Function for LED - PIN setup
+void led_setup()
 {
-    // Initialize button pins
-    pinMode(btn1Pin, INPUT_PULLUP);
-    pinMode(btn2Pin, INPUT_PULLUP);
-    pinMode(btn3Pin, INPUT_PULLUP);
-    pinMode(btn4Pin, INPUT_PULLUP);
-
-    // Initialize LED pins
-    pinMode(ledRedPin, OUTPUT);
-    pinMode(led1Pin, OUTPUT);
-    pinMode(led2Pin, OUTPUT);
-    pinMode(led3Pin, OUTPUT);
-
-    // Ensure all LEDs are initially off
-    digitalWrite(ledRedPin, LOW);
-    digitalWrite(led1Pin, LOW);
-    digitalWrite(led2Pin, LOW);
-    digitalWrite(led3Pin, LOW);
+  // Define all leds as output
+  pinMode(LED_RED_LOCKED_PIN, OUTPUT);
+  pinMode(LED_GREEN_LOCK_1_PIN, OUTPUT);
+  pinMode(LED_GREEN_LOCK_2_PIN, OUTPUT);
+  pinMode(LED_GREEN_LOCK_3_PIN, OUTPUT);
 }
 
-
-// Function for Pin Setup on Keybad
-void pinKeypad()
+// Function for BTN - PIN setup
+void button_setup()
 {
-// Initialize row pins as input with pull-up resistors
-  pinMode(ROW1, INPUT_PULLUP);
-  pinMode(ROW2, INPUT_PULLUP);
-  pinMode(ROW3, INPUT_PULLUP);
-  pinMode(ROW4, INPUT_PULLUP);
-
-  // Initialize column pins as output
-  pinMode(COL1, OUTPUT);
-  pinMode(COL2, OUTPUT);
-  pinMode(COL3, OUTPUT);
-  pinMode(COL4, OUTPUT);
-
-  // Set all column pins HIGH
-  digitalWrite(COL1, HIGH);
-  digitalWrite(COL2, HIGH);
-  digitalWrite(COL3, HIGH);
-  digitalWrite(COL4, HIGH);
+  // Define all buttons as input. PULLUPs are used external
+  pinMode(BTN_1_PIN, INPUT);
+  pinMode(BTN_2_PIN, INPUT);
+  pinMode(BTN_3_PIN, INPUT);
+  pinMode(BTN_4_PIN, INPUT);
 }
-
 
 // Function for the test program with LED´s and BTN´s
-void checkBTNs()
+void check_buttons()
 {
-    if (digitalRead(btn1Pin) == LOW) 
-    {
+  if (LOW == digitalRead(BTN_1_PIN))
+  {
     state_machine(INPUT_1_ACCEPTED);
-    delay(200); // Debounce delay
-    } 
-    else if (digitalRead(btn2Pin) == LOW) 
-    {
-    state_machine(INPUT_2_ACCEPTED);
-    delay(200); // Debounce delay
-    } 
-    else if (digitalRead(btn3Pin) == LOW) 
-    {
-    state_machine(INPUT_3_ACCEPTED);
-    delay(200); // Debounce delay
-    } 
-    else if (digitalRead(btn4Pin) == LOW) 
-    {
-    state_machine(INPUT_REFUSED);
-    delay(200); // Debounce delay
-    }
-}
+  }
 
+  if (LOW == digitalRead(BTN_2_PIN))
+  {
+    state_machine(INPUT_2_ACCEPTED);
+  }
+
+  if (LOW == digitalRead(BTN_3_PIN))
+  {
+    state_machine(INPUT_3_ACCEPTED);
+  }
+
+  if (LOW == digitalRead(BTN_4_PIN))
+  {
+    state_machine(INPUT_REFUSED);
+    state_machine(OPEN_DOOR);
+    state_machine(CLOSE_DOOR);
+  }
+}
 
 // Function to put LED states HIGH or LOW
-void checkStates()
+void check_states()
 {
-    switch(state)
+  switch (state)
+  {
+  case SAFE_LOCKED:
+    digitalWrite(LED_RED_LOCKED_PIN, HIGH);
+    digitalWrite(LED_GREEN_LOCK_1_PIN, LOW);
+    digitalWrite(LED_GREEN_LOCK_2_PIN, LOW);
+    digitalWrite(LED_GREEN_LOCK_3_PIN, LOW);
+    break;
+  case LEVEL_1_UNLOCKED:
+    digitalWrite(LED_RED_LOCKED_PIN, LOW);
+    digitalWrite(LED_GREEN_LOCK_1_PIN, HIGH);
+    digitalWrite(LED_GREEN_LOCK_2_PIN, LOW);
+    digitalWrite(LED_GREEN_LOCK_3_PIN, LOW);
+    
+    if (char key = get_key())
     {
-    case SAFE_LOCKED:
-        digitalWrite(ledRedPin, HIGH);
-        digitalWrite(led1Pin, LOW);
-        digitalWrite(led2Pin, LOW);
-        digitalWrite(led3Pin, LOW);
-        break;
-    case LEVEL_1_UNLOCKED:
-        digitalWrite(ledRedPin, LOW);
-        digitalWrite(led1Pin, HIGH);
-        digitalWrite(led2Pin, LOW);
-        digitalWrite(led3Pin, LOW);
-        break;
-    case LEVEL_2_UNLOCKED:
-        digitalWrite(ledRedPin, LOW);
-        digitalWrite(led1Pin, HIGH);
-        digitalWrite(led2Pin, HIGH);
-        digitalWrite(led3Pin, LOW);
-        break;
-    case LEVEL_3_UNLOCKED:
-        digitalWrite(ledRedPin, LOW);
-        digitalWrite(led1Pin, HIGH);
-        digitalWrite(led2Pin, HIGH);
-        digitalWrite(led3Pin, HIGH);
-        break;
-    default:
-        break;
+      Serial.printf("Key: %c \n", key);
     }
-}
-
-
-// Function to implement the algorithm of the Keypad
-char read_keys()
-{
-    // Erste Spalte auf LOW setzen
-    digitalWrite(COL1, LOW);
-    if (digitalRead(ROW1) == LOW) 
-    {
-        digitalWrite(COL1, HIGH);
-        return keys[0][0];
-    } else if (digitalRead(ROW2) == LOW) 
-    {
-        digitalWrite(COL1, HIGH);
-        return keys[1][0];
-    } else if (digitalRead(ROW3) == LOW) 
-    {
-        digitalWrite(COL1, HIGH);
-        return keys[2][0];
-    } else if (digitalRead(ROW4) == LOW) 
-    {
-        digitalWrite(COL1, HIGH);
-        return keys[3][0];
-    }
-    digitalWrite(COL1, HIGH);
-
-    // Zweite Spalte auf LOW setzen
-    digitalWrite(COL2, LOW);
-    if (digitalRead(ROW1) == LOW) 
-    {
-        digitalWrite(COL2, HIGH);
-        return keys[0][1];
-    } else if (digitalRead(ROW2) == LOW) 
-    {
-        digitalWrite(COL2, HIGH);
-        return keys[1][1];
-    } else if (digitalRead(ROW3) == LOW) 
-    {
-        digitalWrite(COL2, HIGH);
-        return keys[2][1];
-    } else if (digitalRead(ROW4) == LOW) 
-    {
-        digitalWrite(COL2, HIGH);
-        return keys[3][1];
-    }
-    digitalWrite(COL2, HIGH);
-
-    // Dritte Spalte auf LOW setzen
-    digitalWrite(COL3, LOW);
-    if (digitalRead(ROW1) == LOW) 
-    {
-        digitalWrite(COL3, HIGH);
-        return keys[0][2];
-    } else if (digitalRead(ROW2) == LOW) 
-    {
-        digitalWrite(COL3, HIGH);
-        return keys[1][2];
-    } else if (digitalRead(ROW3) == LOW) 
-    {
-        digitalWrite(COL3, HIGH);
-        return keys[2][2];
-    } else if (digitalRead(ROW4) == LOW) 
-    {
-        digitalWrite(COL3, HIGH);
-        return keys[3][2];
-    }
-    digitalWrite(COL3, HIGH);
-
-    // Vierte Spalte auf LOW setzen
-    digitalWrite(COL4, LOW);
-    if (digitalRead(ROW1) == LOW) 
-    {
-        digitalWrite(COL4, HIGH);
-        return keys[0][3];
-    } else if (digitalRead(ROW2) == LOW) 
-    {
-        digitalWrite(COL4, HIGH);
-        return keys[1][3];
-    } else if (digitalRead(ROW3) == LOW) 
-    {
-        digitalWrite(COL4, HIGH);
-        return keys[2][3];
-    } else if (digitalRead(ROW4) == LOW) 
-    {
-        digitalWrite(COL4, HIGH);
-        return keys[3][3];
-    }
-    digitalWrite(COL4, HIGH);
-
-    // Wenn keine Taste gedrückt ist, gib einen speziellen Wert zurück, z.B. 0
-    return 0;
+    break;
+  case LEVEL_2_UNLOCKED:
+    digitalWrite(LED_RED_LOCKED_PIN, LOW);
+    digitalWrite(LED_GREEN_LOCK_1_PIN, HIGH);
+    digitalWrite(LED_GREEN_LOCK_2_PIN, HIGH);
+    digitalWrite(LED_GREEN_LOCK_3_PIN, LOW);
+    break;
+  case LEVEL_3_UNLOCKED:
+    digitalWrite(LED_RED_LOCKED_PIN, LOW);
+    digitalWrite(LED_GREEN_LOCK_1_PIN, HIGH);
+    digitalWrite(LED_GREEN_LOCK_2_PIN, HIGH);
+    digitalWrite(LED_GREEN_LOCK_3_PIN, HIGH);
+    break;
+  default:
+    break;
+  }
 }
