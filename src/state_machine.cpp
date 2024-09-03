@@ -1,9 +1,8 @@
 #include "state_machine.h"
 
-// Create global variables
+// globale Variablen
 State_t state = SAFE_LOCKED;
 
-// Function for state machine
 void state_machine(Event_t event)
 {
   switch (state)

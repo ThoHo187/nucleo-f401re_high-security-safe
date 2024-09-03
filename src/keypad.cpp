@@ -1,5 +1,4 @@
 #include "keypad.h"
-
 uint64_t last_reading_time = 0;
 uint8_t last_key = 0;
 
