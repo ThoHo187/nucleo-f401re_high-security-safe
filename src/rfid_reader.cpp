@@ -1,5 +1,6 @@
 #include "rfid_reader.h"
 #include "pin_defs.h"
+#include "state_machine.h"
 
 // RFID-Setup
 MFRC522 rfid(SS_PIN, RST_PIN);
@@ -46,18 +47,16 @@ void check_rfid()
 
     if (uidAuthorized) {
         Serial.println("Authorized UID detected.");
-        digitalWrite(LED_GREEN_LOCK_3_PIN, HIGH); // LED einschalten
-        digitalWrite(BUZZER_PIN, LOW);            // Buzzer ausschalten
-        delay(5000);                              // LED für 5 Sekunden leuchten lassen
-        digitalWrite(LED_GREEN_LOCK_3_PIN, LOW);  // LED ausschalten
+        state_machine(INPUT_3_ACCEPTED);
     } else {
         Serial.println("Unauthorized UID detected.");
         digitalWrite(BUZZER_PIN, HIGH);           // Buzzer einschalten
-        digitalWrite(LED_GREEN_LOCK_3_PIN, LOW);  // LED ausschalten
-        delay(2000);                              // Buzzer für 2 Sekunden aktiv halten
+        delay(1500);                              // Buzzer während delay aktiv halten
         digitalWrite(BUZZER_PIN, LOW);            // Buzzer ausschalten
+        state_machine(INPUT_REFUSED);
     }
 
     // Karte deaktivieren
     rfid.PICC_HaltA();
+
 }

@@ -60,11 +60,11 @@ void led_setup()
 
 void button_setup()
 {
-    // Define all buttons as input. PULLUPs are used external
-    pinMode(BTN_1_PIN, INPUT);
-    pinMode(BTN_2_PIN, INPUT);
-    pinMode(BTN_3_PIN, INPUT);
-    pinMode(BTN_4_PIN, INPUT);
+    // Define all buttons as input with internal pull-ups
+    pinMode(BTN_1_PIN, INPUT_PULLUP);
+    pinMode(BTN_2_PIN, INPUT_PULLUP);
+    pinMode(BTN_3_PIN, INPUT_PULLUP);
+    pinMode(BTN_4_PIN, INPUT_PULLUP);
 }
 
 void check_buttons()
