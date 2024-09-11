@@ -7,7 +7,7 @@ MFRC522 rfid(SS_PIN, RST_PIN);
 // Zulässige UIDs (Beispiel-UIDs, passe sie nach Bedarf an)
 const byte allowedUIDs[][4] = {
     {0x37, 0xCB, 0x52, 0xB4}, // UID der Karte
-    // {0xCA, 0x8B, 0x8F, 0x81}  // UID des Chips
+    {0xCA, 0x8B, 0x8F, 0x81}  // UID des Chips
 };
 const int numAllowedUIDs = sizeof(allowedUIDs) / sizeof(allowedUIDs[0]);
 
